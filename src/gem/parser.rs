@@ -48,10 +48,16 @@ impl<'a> Parser<'a> {
         self.current_token = self.lexer.next_token();
     }
 
+    // Expects a token and consumes if valid
+    #[inline(always)]
+    fn consume(&mut self, token: Token) {
+        self.expect_token(token);
+        self.next_token();
+    }
+
     fn parse_function_decl(&mut self) -> Stmt {
-        self.expect_token(Token::Func);
-        self.next_token(); // Consume 'func' keyword
-    
+        self.consume(Token::Func);
+
         let name = if let Token::Identifier(ref id) = self.current_token {
             id.clone()
         } else {
@@ -60,8 +66,7 @@ impl<'a> Parser<'a> {
     
         self.next_token(); // Consume function name
     
-        self.expect_token(Token::ParenL);
-        self.next_token(); // Consume left parentheses
+        self.consume(Token::ParenL);
     
         let mut params = Vec::new();
         while self.current_token != Token::ParenR {
@@ -76,17 +81,12 @@ impl<'a> Parser<'a> {
             }
         }
     
-        self.expect_token(Token::ParenR);
-        self.next_token();
-    
-        self.expect_token(Token::BraceL);
-        self.next_token(); // Consume left brace
+        self.consume(Token::ParenR);
+        self.consume(Token::BraceL);
     
         let body = self.parse_expression(); // Parse the function body
 
-        self.expect_token(Token::BraceR);
-
-        self.next_token(); // Consume right brace
+        self.consume(Token::BraceR);
 
         Stmt::FunctionDecl(name, params, body)
     }
@@ -115,7 +115,6 @@ impl<'a> Parser<'a> {
     
         Stmt::VariableDecl(name, value.unwrap_or(Expr::Number(0.0)))
     }
-    
 
     fn parse_expression(&mut self) -> Expr {
         self.parse_binop_expr(0)
