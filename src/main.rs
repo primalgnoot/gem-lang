@@ -2,7 +2,7 @@ use gem::lexer::*;
 use gem::parser::*;
 
 fn main() {
-    let source = r#"
+    const SOURCE: &str = r#"
         var x = "Hello, From x!";
         var y = 3.14;
 
@@ -19,7 +19,7 @@ fn main() {
         }
     "#;
 
-    let lexer = Lexer::new(source);
+    let lexer = Lexer::new(SOURCE);
     let mut parser = Parser::new(lexer);
 
     let parsed = parser.parse();
