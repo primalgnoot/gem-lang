@@ -92,8 +92,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_variable_decl(&mut self) -> Stmt {
-        self.expect_token(Token::Var);
-        self.next_token(); // Consume 'var' keyword
+        self.consume(Token::Var);
     
         let name = if let Token::Identifier(ref id) = self.current_token {
             id.clone()
@@ -110,8 +109,7 @@ impl<'a> Parser<'a> {
             value = Some(self.parse_expression());
         }
     
-        self.expect_token(Token::Semicolon);
-        self.next_token(); // Consume semicolon
+        self.consume(Token::Semicolon);
     
         Stmt::VariableDecl(name, value.unwrap_or(Expr::Number(0.0)))
     }
@@ -160,8 +158,7 @@ impl<'a> Parser<'a> {
             Token::ParenL => {
                 self.next_token(); // Consume left parenthesis
                 let expr = self.parse_expression();
-                self.expect_token(Token::ParenR);
-                self.next_token(); // Consume right parenthesis
+                self.consume(Token::ParenR);
                 expr
             }
             _ => panic!("Unexpected token: {:?}", self.current_token),
@@ -169,8 +166,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_function_call(&mut self, name: String) -> Expr {
-        self.expect_token(Token::ParenL);
-        self.next_token(); // Consume left parenthesis
+        self.consume(Token::ParenL);
 
         let mut args = Vec::new();
         while self.current_token != Token::ParenR {
@@ -184,8 +180,7 @@ impl<'a> Parser<'a> {
             }
         }
 
-        self.expect_token(Token::ParenR);
-        self.next_token(); // Consume right parenthesis
+        self.consume(Token::ParenR);
 
         Expr::FunctionCall(name, args)
     }
