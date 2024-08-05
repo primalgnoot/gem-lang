@@ -12,20 +12,20 @@ Here’s a simple example of Gem’s syntax: We define variables with the var ke
  C-style, except without types
 
 ```gem
-        var x = "Hello, From x!";
-        var y = 3.14;
+var x = "Hello, From x!";
+var y = 3.14;
 
-        func add(x, y) {
-            x + y
-        }
+func add(x, y) {
+    x + y
+}
 
-        func foo(z, x) {
-            z * add(x, z)
-        }
+func foo(z, x) {
+    z * add(x, z)
+}
 
-        func main() {
-            foo(bar, 12)
-        }
+func main() {
+    foo(bar, 12)
+}
 ```
 ___
 I’m open to recommendations and potential contributions! If you have any suggestions or would like to help improve the interpreter, feel free to reach out or contribute!
