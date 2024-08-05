@@ -22,3 +22,6 @@ func add(x, y) {
 func foo(z, x) {
     z * add(x, z)
 }
+```
+___
+I’m open to recommendations and potential contributions! If you have any suggestions or would like to help improve the interpreter, feel free to reach out or contribute!
