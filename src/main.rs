@@ -2,23 +2,18 @@ use gem::lexer::*;
 use gem::parser::*;
 
 fn main() {
-    let source = "
-        var gx = 32;
-        var gz = 64;
-
-        func add(x, y) {
-            x + y
+    let source = r#"
+        var x = "Hello, From x!";
+        var y = 3.14;
+        func greet() {
+            "Hello, world!"
         }
-
-        func foo(z, x) {
-            z * add(x, z)
-        }
-    ";
+    "#;
 
     let lexer = Lexer::new(source);
     let mut parser = Parser::new(lexer);
 
-    let evaluated = parser.parse();
+    let parsed = parser.parse();
 
-    println!("{}", evaluated);
+    println!("{}", parsed);
 }

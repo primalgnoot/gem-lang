@@ -1,25 +1,5 @@
-use std::fmt;
+use crate::common::{Stmt, Expr, Operation, Token};
 use crate::lexer::*;
-
-pub enum Operation {
-    Add,
-    Sub,
-    Mul,
-    Div,
-}
-
-pub enum Stmt {
-    FunctionDecl(String, Vec<String>, Expr),
-    VariableDecl(String, Expr),
-    Program(Vec<Stmt>),
-}
-
-pub enum Expr {
-    Number(f64),
-    Variable(String),
-    OpBinary(Operation, Box<Expr>, Box<Expr>),
-    FunctionCall(String, Vec<Expr>),
-}
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
@@ -84,7 +64,7 @@ impl<'a> Parser<'a> {
         self.consume(Token::ParenR);
         self.consume(Token::BraceL);
     
-        let body = self.parse_expression(); // Parse the function body
+        let body = self.parse_expression();
 
         self.consume(Token::BraceR);
 
@@ -111,7 +91,7 @@ impl<'a> Parser<'a> {
     
         self.consume(Token::Semicolon);
     
-        Stmt::VariableDecl(name, value.unwrap_or(Expr::Number(0.0)))
+        Stmt::VariableDecl(name, value.unwrap_or(Expr::LitNum(0.0)))
     }
 
     fn parse_expression(&mut self) -> Expr {
@@ -143,12 +123,16 @@ impl<'a> Parser<'a> {
         let token = self.current_token.clone();
         
         match token {
-            Token::Number(value) => {
-                self.next_token(); // Consume the number
-                Expr::Number(value)
+            Token::LitNum(value) => {
+                self.next_token();
+                Expr::LitNum(value)
+            }
+            Token::LitStr(ref value) => {
+                self.next_token();
+                Expr::LitStr(value.clone())
             }
             Token::Identifier(ref id) => {
-                self.next_token(); // Consume the identifier
+                self.next_token();
                 if self.current_token == Token::ParenL {
                     self.parse_function_call(id.clone())
                 } else {
@@ -156,7 +140,7 @@ impl<'a> Parser<'a> {
                 }
             }
             Token::ParenL => {
-                self.next_token(); // Consume left parenthesis
+                self.next_token();
                 let expr = self.parse_expression();
                 self.consume(Token::ParenR);
                 expr
@@ -164,6 +148,7 @@ impl<'a> Parser<'a> {
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
+    
 
     fn parse_function_call(&mut self, name: String) -> Expr {
         self.consume(Token::ParenL);
@@ -174,7 +159,7 @@ impl<'a> Parser<'a> {
             args.push(arg);
 
             if self.current_token == Token::Comma {
-                self.next_token(); // Consume comma
+                self.next_token();
             } else {
                 break;
             }
@@ -220,53 +205,5 @@ impl<'a> Parser<'a> {
         }
 
         Stmt::Program(stmts)
-    }
-}
-
-impl fmt::Display for Operation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let op = match self {
-            Operation::Add => "+",
-            Operation::Sub => "-",
-            Operation::Mul => "*",
-            Operation::Div => "/",
-        };
-        write!(f, "{}", op)
-    }
-}
-
-impl fmt::Display for Expr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Expr::Number(value) => write!(f, "{}", value),
-            Expr::Variable(name) => write!(f, "{}", name),
-            Expr::OpBinary(op, left, right) => {
-                write!(f, "({} {} {})", left, op, right)
-            }
-            Expr::FunctionCall(name, args) => {
-                let args_str: Vec<String> = args.iter().map(|arg| arg.to_string()).collect();
-                write!(f, "{}({})", name, args_str.join(", "))
-            }
-        }
-    }
-}
-
-impl fmt::Display for Stmt {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Stmt::FunctionDecl(name, params, body) => {
-                let params_str = params.join(", ");
-                write!(f, "function {}({}) {{\n    {}\n}}", name, params_str, body)
-            }
-            Stmt::VariableDecl(name, value) => {
-                write!(f, "variable {}({}) ", name, value)
-            }
-            Stmt::Program(stmts) => {
-                for stmt in stmts {
-                    writeln!(f, "{}\n", stmt)?;
-                }
-                Ok(())
-            }
-        }
     }
 }

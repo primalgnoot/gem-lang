@@ -1,24 +1,4 @@
-#[derive(PartialEq, Debug, Clone)]
-pub enum Token {
-    Number(f64),
-    Identifier(String),
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Eq,
-    Colon,
-    Comma,
-    Dot,
-    Semicolon,
-    ParenL,
-    ParenR,
-    BraceL,
-    BraceR,
-    Func,
-    Var,
-    Eof,
-}
+use crate::common::Token;
 
 pub struct Lexer<'a> {
     input: &'a str,
@@ -42,10 +22,7 @@ impl<'a> Lexer<'a> {
         let c = self.current_char().unwrap();
 
         macro_rules! opdef {
-            ($self:ident, $token:expr) => {{
-                $self.pos += 1;
-                $token
-            }};
+            ($self:ident, $token:expr) => {{ $self.pos += 1; $token }};
         }
 
         match c {
@@ -62,6 +39,7 @@ impl<'a> Lexer<'a> {
             ')' => opdef!(self, Token::ParenR),
             '{' => opdef!(self, Token::BraceL),
             '}' => opdef!(self, Token::BraceR),
+            '"' => self.parse_string_literal(),
             '0'..='9' => self.parse_number(),
             'a'..='z' | 'A'..='Z' => self.parse_identifier(),
             _ => {
@@ -91,7 +69,7 @@ impl<'a> Lexer<'a> {
         }
 
         let number: f64 = self.input[start..self.pos].parse().unwrap_or(0.0);
-        Token::Number(number)
+        Token::LitNum(number)
     }
 
     fn parse_identifier(&mut self) -> Token {
@@ -107,5 +85,44 @@ impl<'a> Lexer<'a> {
             "var" => Token::Var,
             _ => Token::Identifier(identifier),
         }
+    }
+
+    fn parse_string_literal(&mut self) -> Token {
+        self.pos += 1; // Skip the opening quote
+    
+        let mut result = String::new();
+
+        while self.pos < self.input.len() {
+            match self.current_char() {
+                Some('"') => {
+                    self.pos += 1;
+                    return Token::LitStr(result);
+                }
+                Some('\\') => {
+                    // Handling escape sequences
+                    self.pos += 1;
+                    if self.pos < self.input.len() {
+                        match self.current_char() {
+                            Some('n') => result.push('\n'),
+                            Some('t') => result.push('\t'),
+                            Some('"') => result.push('"'),
+                            Some('\\') => result.push('\\'),
+                            _ => {
+                                result.push('\\');
+                                result.push(self.current_char().unwrap());
+                            }
+                        }
+                        self.pos += 1;
+                    }
+                }
+                Some(c) => result.push(c),
+                None => {
+                    return Token::LitStr(result);
+                }
+            }
+            self.pos += 1;
+        }
+    
+        Token::LitStr(result)
     }
 }
