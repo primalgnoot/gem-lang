@@ -63,7 +63,7 @@ impl<'a> Parser<'a> {
         self.consume(Token::ParenR);
         self.consume(Token::BraceL);
 
-        let body = self.parse_block(); // Updated to parse a block of statements
+        let body = self.parse_block();
 
         self.consume(Token::BraceR);
 
