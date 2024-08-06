@@ -19,7 +19,7 @@ impl<'a> Parser<'a> {
     #[inline(always)]
     fn expect_token(&mut self, token: Token) {
         if self.current_token != token {
-            panic!("Expected token: {:?}, got: {:?}", token, self.current_token)
+            panic!("Expected token: {:?}, got: {:?}", token, self.current_token);
         }
     }
 
@@ -28,7 +28,6 @@ impl<'a> Parser<'a> {
         self.current_token = self.lexer.next_token();
     }
 
-    // Expects a token and consumes if valid
     #[inline(always)]
     fn consume(&mut self, token: Token) {
         self.expect_token(token);
@@ -63,12 +62,12 @@ impl<'a> Parser<'a> {
     
         self.consume(Token::ParenR);
         self.consume(Token::BraceL);
-    
-        let body = self.parse_expression();
+
+        let body = self.parse_block(); // Updated to parse a block of statements
 
         self.consume(Token::BraceR);
 
-        Stmt::FunctionDecl(name, params, body)
+        Stmt::FunctionDecl(Expr::Null, name, params, Box::new(body))
     }
 
     fn parse_variable_decl(&mut self) -> Stmt {
@@ -80,12 +79,12 @@ impl<'a> Parser<'a> {
             panic!("Expected variable name");
         };
     
-        self.next_token(); // Consume variable name
+        self.next_token();
     
         let mut value = None;
     
         if self.current_token == Token::Eq {
-            self.next_token(); // Consume '='
+            self.next_token();
             value = Some(self.parse_expression());
         }
     
@@ -95,7 +94,31 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression(&mut self) -> Expr {
-        self.parse_binop_expr(0)
+        match self.current_token {
+            Token::LitNum(_) | Token::LitStr(_) | Token::Identifier(_) | Token::ParenL => self.parse_binop_expr(0),
+            _ => panic!("Unexpected token: {:?}", self.current_token),
+        }
+    }
+
+    fn parse_statement(&mut self) -> Stmt {
+        match self.current_token {
+            Token::Var => self.parse_variable_decl(),
+            Token::Func => self.parse_function_decl(),
+            _ => Stmt::Expr(self.parse_expression()),
+        }
+    }
+
+    fn parse_block(&mut self) -> Stmt {
+        let mut stmts = Vec::new();
+
+        while self.current_token != Token::BraceR && self.current_token != Token::Eof {
+            stmts.push(self.parse_statement());
+            if self.current_token == Token::Semicolon {
+                self.next_token(); // Skip semicolons separating statements
+            }
+        }
+
+        Stmt::Program(stmts)
     }
 
     fn parse_binop_expr(&mut self, precedence: u8) -> Expr {
@@ -134,7 +157,7 @@ impl<'a> Parser<'a> {
             Token::Identifier(ref id) => {
                 self.next_token();
                 if self.current_token == Token::ParenL {
-                    self.parse_function_call(id.clone())
+                    self.parse_function_call_expr(id.clone())
                 } else {
                     Expr::Variable(id.clone())
                 }
@@ -148,9 +171,8 @@ impl<'a> Parser<'a> {
             _ => panic!("Unexpected token: {:?}", self.current_token),
         }
     }
-    
 
-    fn parse_function_call(&mut self, name: String) -> Expr {
+    fn parse_function_call_expr(&mut self, name: String) -> Expr {
         self.consume(Token::ParenL);
 
         let mut args = Vec::new();
@@ -191,17 +213,7 @@ impl<'a> Parser<'a> {
         let mut stmts = Vec::new();
 
         while self.current_token != Token::Eof {
-            match self.current_token {
-                Token::Func => {
-                    let func_stmt = self.parse_function_decl();
-                    stmts.push(func_stmt);
-                }
-                Token::Var => {
-                    let var_stmt = self.parse_variable_decl();
-                    stmts.push(var_stmt);
-                }
-                _ => panic!("Unexpected token: {:?}", self.current_token),
-            }
+            stmts.push(self.parse_statement());
         }
 
         Stmt::Program(stmts)

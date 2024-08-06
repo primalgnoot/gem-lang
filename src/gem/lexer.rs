@@ -83,6 +83,10 @@ impl<'a> Lexer<'a> {
         match identifier.as_str() {
             "func" => Token::Func,
             "var" => Token::Var,
+            "if" => Token::If,
+            "else" => Token::Else,
+            "while" => Token::While,
+            "return" => Token::Return,
             _ => Token::Identifier(identifier),
         }
     }
