@@ -1,9 +1,5 @@
 # A Minimal Interpreter for the Gem Language
 
-## Why I Created This
-
-I recently decided to give rust a try, for fun! and also to sharpen my skills, maybe. I usually write in C++ but for this particular project I was drawn to rust, mainly because of how concise it is 
-
 ## The Syntax
 
 I currently do not have a clear goal for how the language will behave and look like, I suppose it will just develop along with the interpreter and at the moment, there isn't even a complete
