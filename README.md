@@ -6,7 +6,7 @@ I recently decided to give rust a try, for fun! and also to sharpen my skills, m
 
 ## The Syntax
 
-I currently do not have a clear goal for how the language will behave and look like, I suppose it will just develop along with the interpreter and at the moment, there isn't even an complete
+I currently do not have a clear goal for how the language will behave and look like, I suppose it will just develop along with the interpreter and at the moment, there isn't even a complete
  interpreter, just the Lexer and Parser... anyways! 
 Here’s a simple example of Gem’s syntax: We define variables with the var keyword, followed by it's name, and from there we can either assign a value or leave it as a declaration, functions are declared with the func keyword, the rest is pretty much
  C-style, except without types
